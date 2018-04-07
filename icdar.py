@@ -602,6 +602,7 @@ def generator(input_size=512, batch_size=32,
                 # print im_fn
                 h, w, _ = im.shape
                 txt_fn = im_fn.replace(os.path.basename(im_fn).split('.')[1], 'txt')
+                txt_fn = txt_fn.replace(os.path.basename(txt_fn).split('.')[0], 'gt_' + os.path.basename(im_fn).split('.')[0])
                 if not os.path.exists(txt_fn):
                     print('text file {} does not exists'.format(txt_fn))
                     continue

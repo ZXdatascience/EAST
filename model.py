@@ -5,7 +5,7 @@ from tensorflow.contrib import slim
 
 tf.app.flags.DEFINE_integer('text_scale', 512, '')
 
-from nets import resnet_v1
+from nets import mobilenet_v2
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -36,8 +36,8 @@ def model(images, weight_decay=1e-5, is_training=True):
     '''
     images = mean_image_subtraction(images)
 
-    with slim.arg_scope(resnet_v1.resnet_arg_scope(weight_decay=weight_decay)):
-        logits, end_points = resnet_v1.resnet_v1_50(images, is_training=is_training, scope='resnet_v1_50')
+    with slim.arg_scope(mobilenet_v2.training_scope(weight_decay=weight_decay)):
+        logits, end_points = mobilenet_v2.mobilenet(images)
 
     with tf.variable_scope('feature_fusion', values=[end_points.values]):
         batch_norm_params = {
@@ -51,8 +51,19 @@ def model(images, weight_decay=1e-5, is_training=True):
                             normalizer_fn=slim.batch_norm,
                             normalizer_params=batch_norm_params,
                             weights_regularizer=slim.l2_regularizer(weight_decay)):
-            f = [end_points['pool5'], end_points['pool4'],
-                 end_points['pool3'], end_points['pool2']]
+            f = [end_points['layer_18/output'], end_points['layer_14/output'],
+                 end_points['layer_7/output'], end_points['layer_4/output']]
+            # Given input 224, 224, 3
+            # layer_1
+            # 112, 32
+            # layer_4 / output
+            # 56, 24
+            # layer_7 / output
+            # 28, 32
+            # layer_14 / output
+            # 14, 96
+            # layer_18 / output
+            # 7, 320
             for i in range(4):
                 print('Shape of f_{} {}'.format(i, f[i].shape))
             g = [None, None, None, None]
