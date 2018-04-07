@@ -366,12 +366,15 @@ def global_pool(input_tensor, pool_op=tf.nn.avg_pool):
     a tensor batch_size x 1 x 1 x depth.
   """
   shape = input_tensor.get_shape().as_list()
+
   if shape[1] is None or shape[2] is None:
     kernel_size = tf.convert_to_tensor(
         [1, tf.shape(input_tensor)[1],
          tf.shape(input_tensor)[2], 1])
   else:
     kernel_size = [1, shape[1], shape[2], 1]
+  
+  print(kernel_size)
   output = pool_op(
       input_tensor, ksize=kernel_size, strides=[1, 1, 1, 1], padding='VALID')
   # Recover output shape, for unknown shape.

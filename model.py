@@ -32,13 +32,13 @@ def mean_image_subtraction(images, means=[123.68, 116.78, 103.94]):
 
 def model(images, weight_decay=1e-5, is_training=True):
     '''
-    define the model, we use slim's implemention of resnet
+    define the model, we use slim's implemention of mobilenets
     '''
     images = mean_image_subtraction(images)
 
     with slim.arg_scope(mobilenet_v2.training_scope(weight_decay=weight_decay)):
-        logits, end_points = mobilenet_v2.mobilenet(images)
-
+        logits, end_points = mobilenet_v2.mobilenet_base(images)
+    
     with tf.variable_scope('feature_fusion', values=[end_points.values]):
         batch_norm_params = {
         'decay': 0.997,
@@ -51,7 +51,7 @@ def model(images, weight_decay=1e-5, is_training=True):
                             normalizer_fn=slim.batch_norm,
                             normalizer_params=batch_norm_params,
                             weights_regularizer=slim.l2_regularizer(weight_decay)):
-            f = [end_points['layer_18/output'], end_points['layer_14/output'],
+            f = [end_points['layer_19'], end_points['layer_14/output'],
                  end_points['layer_7/output'], end_points['layer_4/output']]
             # Given input 224, 224, 3
             # layer_1

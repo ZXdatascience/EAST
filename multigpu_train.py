@@ -10,11 +10,11 @@ tf.app.flags.DEFINE_float('learning_rate', 0.0001, '')
 tf.app.flags.DEFINE_integer('max_steps', 100000, '')
 tf.app.flags.DEFINE_float('moving_average_decay', 0.997, '')
 tf.app.flags.DEFINE_string('gpu_list', '1', '')
-tf.app.flags.DEFINE_string('checkpoint_path', '/tmp/east_resnet_v1_50_rbox/', '')
+tf.app.flags.DEFINE_string('checkpoint_path', '/tmp/east_mobilenet_v2_1.0_224_rbox/', '')
 tf.app.flags.DEFINE_boolean('restore', False, 'whether to resotre from checkpoint')
 tf.app.flags.DEFINE_integer('save_checkpoint_steps', 1000, '')
 tf.app.flags.DEFINE_integer('save_summary_steps', 100, '')
-tf.app.flags.DEFINE_string('pretrained_model_path', None, '')
+tf.app.flags.DEFINE_string('pretrained_model_path', '/home/xu/pre_trained/mobilenet_v2_1.0_224/mobilenet_v2_1.0_224.ckpt', '')
 
 import model
 import icdar
@@ -76,13 +76,13 @@ def main(argv=None):
             tf.gfile.DeleteRecursively(FLAGS.checkpoint_path)
             tf.gfile.MkDir(FLAGS.checkpoint_path)
 
-    input_images = tf.placeholder(tf.float32, shape=[None, None, None, 3], name='input_images')
-    input_score_maps = tf.placeholder(tf.float32, shape=[None, None, None, 1], name='input_score_maps')
+    input_images = tf.placeholder(tf.float32, shape=[None, 512, 512, 3], name='input_images')
+    input_score_maps = tf.placeholder(tf.float32, shape=[None, 128, 128, 1], name='input_score_maps')
     if FLAGS.geometry == 'RBOX':
-        input_geo_maps = tf.placeholder(tf.float32, shape=[None, None, None, 5], name='input_geo_maps')
+        input_geo_maps = tf.placeholder(tf.float32, shape=[None, 128, 128, 5], name='input_geo_maps')
     else:
-        input_geo_maps = tf.placeholder(tf.float32, shape=[None, None, None, 8], name='input_geo_maps')
-    input_training_masks = tf.placeholder(tf.float32, shape=[None, None, None, 1], name='input_training_masks')
+        input_geo_maps = tf.placeholder(tf.float32, shape=[None, 128, 128, 8], name='input_geo_maps')
+    input_training_masks = tf.placeholder(tf.float32, shape=[None, 128, 128, 1], name='input_training_masks')
 
     global_step = tf.get_variable('global_step', [], initializer=tf.constant_initializer(0), trainable=False)
     learning_rate = tf.train.exponential_decay(FLAGS.learning_rate, global_step, decay_steps=10000, decay_rate=0.94, staircase=True)
@@ -110,8 +110,13 @@ def main(argv=None):
                 total_loss, model_loss = tower_loss(iis, isms, igms, itms, reuse_variables)
                 batch_norm_updates_op = tf.group(*tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope))
                 reuse_variables = True
+                print(total_loss)
+                print(model_loss)
 
                 grads = opt.compute_gradients(total_loss)
+                for pair in grads:
+                    if pair[0] is None:
+                        print(pair)
                 tower_grads.append(grads)
 
     grads = average_gradients(tower_grads)
@@ -147,6 +152,7 @@ def main(argv=None):
         data_generator = icdar.get_batch(num_workers=FLAGS.num_readers,
                                          input_size=FLAGS.input_size,
                                          batch_size=FLAGS.batch_size_per_gpu * len(gpus))
+        
 
         start = time.time()
         for step in range(FLAGS.max_steps):

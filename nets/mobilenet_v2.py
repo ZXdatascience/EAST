@@ -26,10 +26,13 @@ from __future__ import print_function
 
 import copy
 
+import sys
+sys.path.append('/home/xu/EAST/')
+
 import tensorflow as tf
 
-from nets.mobilenet import conv_blocks as ops
-from nets.mobilenet import mobilenet as lib
+from nets import conv_blocks as ops
+from nets import mobilenet as lib
 
 slim = tf.contrib.slim
 op = lib.op
