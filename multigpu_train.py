@@ -5,13 +5,13 @@ from tensorflow.contrib import slim
 
 tf.app.flags.DEFINE_integer('input_size', 512, '')
 tf.app.flags.DEFINE_integer('batch_size_per_gpu', 14, '')
-tf.app.flags.DEFINE_integer('num_readers', 16, '')
+tf.app.flags.DEFINE_integer('num_readers', 24, '')
 tf.app.flags.DEFINE_float('learning_rate', 0.0001, '')
-tf.app.flags.DEFINE_integer('max_steps', 100000, '')
+tf.app.flags.DEFINE_integer('max_steps', 10000, '')
 tf.app.flags.DEFINE_float('moving_average_decay', 0.997, '')
-tf.app.flags.DEFINE_string('gpu_list', '1', '')
-tf.app.flags.DEFINE_string('checkpoint_path', '/tmp/east_mobilenet_v2_1.0_224_rbox/', '')
-tf.app.flags.DEFINE_boolean('restore', False, 'whether to resotre from checkpoint')
+tf.app.flags.DEFINE_string('gpu_list', '0,1,2,3', '')
+tf.app.flags.DEFINE_string('checkpoint_path', '/home/xu/check_points_all_data/east_mobilenet_v2_1.0_224_rbox/', '')
+tf.app.flags.DEFINE_boolean('restore', True, 'whether to resotre from checkpoint')
 tf.app.flags.DEFINE_integer('save_checkpoint_steps', 1000, '')
 tf.app.flags.DEFINE_integer('save_summary_steps', 100, '')
 tf.app.flags.DEFINE_string('pretrained_model_path', '/home/xu/pre_trained/mobilenet_v2_1.0_224/mobilenet_v2_1.0_224.ckpt', '')
@@ -22,6 +22,7 @@ import icdar
 FLAGS = tf.app.flags.FLAGS
 
 gpus = list(range(len(FLAGS.gpu_list.split(','))))
+print(gpus)
 
 
 def tower_loss(images, score_maps, geo_maps, training_masks, reuse_variables=None):
@@ -110,13 +111,8 @@ def main(argv=None):
                 total_loss, model_loss = tower_loss(iis, isms, igms, itms, reuse_variables)
                 batch_norm_updates_op = tf.group(*tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope))
                 reuse_variables = True
-                print(total_loss)
-                print(model_loss)
-
                 grads = opt.compute_gradients(total_loss)
-                for pair in grads:
-                    if pair[0] is None:
-                        print(pair)
+
                 tower_grads.append(grads)
 
     grads = average_gradients(tower_grads)

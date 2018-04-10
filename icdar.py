@@ -14,7 +14,7 @@ import tensorflow as tf
 
 from data_util import GeneratorEnqueuer
 
-tf.app.flags.DEFINE_string('training_data_path', '/home/xu/data/icdar2015/',
+tf.app.flags.DEFINE_string('training_data_path', '/home/xu/data/train/',
                            'training dataset to use')
 tf.app.flags.DEFINE_integer('max_image_large_side', 1280,
                             'max image size of training')
@@ -601,8 +601,10 @@ def generator(input_size=512, batch_size=32,
                 im = cv2.imread(im_fn)
                 # print im_fn
                 h, w, _ = im.shape
-                txt_fn = im_fn.replace(os.path.basename(im_fn).split('.')[1], 'txt')
-                txt_fn = txt_fn.replace(os.path.basename(txt_fn).split('.')[0], 'gt_' + os.path.basename(im_fn).split('.')[0])
+                base_name = os.path.basename(im_fn).split('_')
+                base_name = base_name[0] + '_gt_' + base_name[1] + '_'  + base_name[2]
+                base_name = base_name.split('.')[0] + '.txt'
+                txt_fn = im_fn.replace(os.path.basename(im_fn), base_name)
                 if not os.path.exists(txt_fn):
                     print('text file {} does not exists'.format(txt_fn))
                     continue
