@@ -38,7 +38,7 @@ def model(images, weight_decay=1e-5, is_training=True):
     images = mean_image_subtraction(images)
 
     with slim.arg_scope(mobilenet_v2.training_scope(weight_decay=weight_decay)):
-        logits, end_points = mobilenet_v2.mobilenet_base(images, final_endpoint='layer_18/output')
+        logits, end_points = mobilenet_v2.mobilenet_base(images, final_endpoint='layer_18')
     
     with tf.variable_scope('feature_fusion', values=[end_points.values]):
         batch_norm_params = {
