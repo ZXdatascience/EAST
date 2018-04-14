@@ -6,6 +6,7 @@ from tensorflow.contrib import slim
 tf.app.flags.DEFINE_integer('text_scale', 512, '')
 
 from nets import mobilenet_v2
+from nets import conv_blocks as ops
 
 FLAGS = tf.app.flags.FLAGS
 
