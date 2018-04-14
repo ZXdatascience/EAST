@@ -8,11 +8,11 @@ import tensorflow as tf
 import locality_aware_nms as nms_locality
 import lanms
 
-tf.app.flags.DEFINE_string('test_data_path', 'data/test/', '')
+tf.app.flags.DEFINE_string('test_data_path', '/home/xu/data/ch4_test/', '')
 tf.app.flags.DEFINE_string('gpu_list', '0', '')
-tf.app.flags.DEFINE_string('checkpoint_path', '/tmp/east_mobilenet_v2_1.0_224_rbox/model.ckpt', '')
-tf.app.flags.DEFINE_string('output_dir', '/tmp/ch4_test_images/images/', '')
-tf.app.flags.DEFINE_bool('no_write_images', False, 'do not write images')
+tf.app.flags.DEFINE_string('checkpoint_path', '/home/xu/check_points_expanded_convs', '')
+tf.app.flags.DEFINE_string('output_dir', '/home/xu/output/output_doesnotmatter', '')
+tf.app.flags.DEFINE_bool('no_write_images', True, 'do not write images')
 
 import model
 from icdar import restore_rectangle
@@ -146,6 +146,9 @@ def main(argv=None):
             print('Restore from {}'.format(model_path))
             saver.restore(sess, model_path)
 
+            tf.train.write_graph(sess.graph_def, '.', 'expanded_convs.pbtxt')
+            average_time = [[],[],[]]
+
             im_fn_list = get_images()
             for im_fn in im_fn_list:
                 im = cv2.imread(im_fn)[:, :, ::-1]
@@ -161,6 +164,9 @@ def main(argv=None):
                 print('{} : net {:.0f}ms, restore {:.0f}ms, nms {:.0f}ms'.format(
                     im_fn, timer['net']*1000, timer['restore']*1000, timer['nms']*1000))
 
+                average_time[0].append(timer['net'] * 1000)
+                average_time[1].append(timer['restore'] * 1000)
+                average_time[2].append(timer['nms'] * 1000)
                 if boxes is not None:
                     boxes = boxes[:, :8].reshape((-1, 4, 2))
                     boxes[:, :, 0] /= ratio_w
@@ -189,6 +195,8 @@ def main(argv=None):
                 if not FLAGS.no_write_images:
                     img_path = os.path.join(FLAGS.output_dir, os.path.basename(im_fn))
                     cv2.imwrite(img_path, im[:, :, ::-1])
+            avg_time = np.mean(average_time, axis=1)
+            print('average time: net {:.0f}ms, restore {:.0f}ms, nms {:.0f}ms'.format(avg_time[0], avg_time[1], avg_time[2]))
 
 if __name__ == '__main__':
     tf.app.run()
