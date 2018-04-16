@@ -3,6 +3,9 @@
 This project is forked from 
 (https://github.com/argman/EAST)
 Most of code is borrowed from this repository
+
+The MobileNetV2 code is borrowed from official tensorflow mobilenet model:
+https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
 Here are some changes I made:
 1. Changed the architecture in model.py
 2. Changed a small part of multigpu_train.py and eval.py to work with the modified architecture.
