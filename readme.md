@@ -3,7 +3,10 @@
 This project is forked from 
 (https://github.com/argman/EAST)
 Most of code is borrowed from this repository
-I only changed the architecture in model.py, a small part of eval.py, multigpu_train.py
+Here are some changes I made:
+1. Changed the architecture in model.py
+2. Changed a small part of multigpu_train.py and eval.py to work with the modified architecture.
+3. Add MobileNetV2 scipt and its component expanded convs to the nets folder to use MobileNetV2 and residual bottleneck layer.
 
 For the implementation on Android:
 1. Wrote a simple user interface to demo the functionality of the model.
